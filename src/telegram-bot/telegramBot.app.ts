@@ -3,11 +3,13 @@ import { Bot } from "grammy";
 import { getAuthUrl } from "./service/connect.service.js";
 import { removeStoredTokens } from "@core/calendar/access.service.js";
 import { CalendarAccessStatus } from "@core/calendar/calendar.type.js";
+import { getTodayEvents } from "@core/calendar/calendarEvents.service.js";
 import { startOAuthServer } from "./oauth.server.js";
 import { telegramIdentityMiddleware } from "./middleware/telegramIdentity/telegramIdentity.middleware.js";
 import { calendarAccessMiddleware } from "./middleware/calendarAccess.middleware.js";
 import type { BotContext } from "./middleware/telegramIdentity/botContext.type.js";
 import { BotCommand } from "./enum/botCommand.enum.js";
+import { formatEventsList } from "./util/calendarEvent.util.js";
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -20,7 +22,6 @@ const bot = new Bot<BotContext>(token);
 bot.use(telegramIdentityMiddleware);
 
 bot.command(BotCommand.Connect, calendarAccessMiddleware, async (ctx) => {
-  if (!ctx.calendarAccess) throw new Error("calendarAccessMiddleware must run before this handler");
   if (ctx.calendarAccess.status === CalendarAccessStatus.Connected) {
     await ctx.reply(`Calendar already connected. Send /${BotCommand.Status} to check anytime.`);
     return;
@@ -31,7 +32,6 @@ bot.command(BotCommand.Connect, calendarAccessMiddleware, async (ctx) => {
 
 bot.command(BotCommand.Status, calendarAccessMiddleware, async (ctx) => {
   const access = ctx.calendarAccess;
-  if (!access) throw new Error("calendarAccessMiddleware must run before this handler");
   if (access.status === CalendarAccessStatus.Connected) {
     await ctx.reply(`Calendar connected: ${access.email}`);
   } else if (access.status === CalendarAccessStatus.Expired) {
@@ -39,6 +39,18 @@ bot.command(BotCommand.Status, calendarAccessMiddleware, async (ctx) => {
   } else {
     await ctx.reply(`Calendar not connected. Send /${BotCommand.Connect}.`);
   }
+});
+
+bot.command(BotCommand.Today, calendarAccessMiddleware, async (ctx) => {
+  const access = ctx.calendarAccess;
+  
+  if (access.status !== CalendarAccessStatus.Connected) {
+    await ctx.reply(`Calendar not connected. Send /${BotCommand.Connect}.`);
+    return;
+  }
+
+  const events = await getTodayEvents(access.calendar);
+  await ctx.reply(formatEventsList(events));
 });
 
 bot.command(BotCommand.Disconnect, async (ctx) => {
