@@ -49,8 +49,3 @@ export const getTodayEvents = (
   calendar: GoogleCalendarClient
 ): Promise<CalendarEvent[]> =>
   listEvents(calendar, startOfToday(), startOfToday(1));
-
-export const getUpcomingWeekEvents = (
-  calendar: GoogleCalendarClient
-): Promise<CalendarEvent[]> =>
-  listEvents(calendar, startOfToday(), startOfToday(7));

@@ -4,6 +4,7 @@ import { getAuthUrl } from "./service/connect.service.js";
 import { removeStoredTokens } from "@core/calendar/access.service.js";
 import { CalendarAccessStatus } from "@core/calendar/calendar.type.js";
 import { getTodayEvents } from "@core/calendar/calendarEvents.service.js";
+import { answerCalendarQuestion } from "@core/llm/calendarAssistant.service.js";
 import { startOAuthServer } from "./oauth.server.js";
 import { telegramIdentityMiddleware } from "./middleware/telegramIdentity/telegramIdentity.middleware.js";
 import { calendarAccessMiddleware } from "./middleware/calendarAccess.middleware.js";
@@ -16,6 +17,7 @@ import {
   DISCONNECTED_MESSAGE,
   DISCONNECT_NOT_CONNECTED_MESSAGE,
   GENERIC_ERROR_MESSAGE,
+  AI_UNAVAILABLE_MESSAGE,
   connectUrlMessage,
   connectedEmailMessage,
 } from "./const/message.const.js";
@@ -64,18 +66,41 @@ bot.command(BotCommand.Today, calendarAccessMiddleware, async (ctx) => {
 
 bot.command(BotCommand.Disconnect, async (ctx) => {
   const removed = await removeStoredTokens(ctx.telegramUserId);
-  await ctx.reply(removed ? DISCONNECTED_MESSAGE : DISCONNECT_NOT_CONNECTED_MESSAGE);
+  await ctx.reply(
+    removed ? DISCONNECTED_MESSAGE : DISCONNECT_NOT_CONNECTED_MESSAGE
+  );
 });
 
-bot.on("message:text", async (ctx) => {
-  await ctx.reply(`I can't answer questions yet. Try /${BotCommand.Connect} to get started.`);
+bot.on("message:text", calendarAccessMiddleware, async (ctx) => {
+  const access = ctx.calendarAccess;
+  if (access.status !== CalendarAccessStatus.Connected) {
+    await ctx.reply(NOT_CONNECTED_MESSAGE);
+    return;
+  }
+
+  try {
+    const answer = await answerCalendarQuestion(
+      ctx.telegramUserId,
+      ctx.message.text,
+      access.calendar
+    );
+    await ctx.reply(answer);
+  } catch (err) {
+    console.error("LLM call failed:", err);
+    await ctx.reply(AI_UNAVAILABLE_MESSAGE);
+  }
 });
 
 bot.catch((err) => {
-  console.error(`Unhandled error for update ${err.ctx.update.update_id}:`, err.error);
+  console.error(
+    `Unhandled error for update ${err.ctx.update.update_id}:`,
+    err.error
+  );
   err.ctx
     .reply(GENERIC_ERROR_MESSAGE)
-    .catch((replyErr) => console.error("Failed to notify user of error:", replyErr));
+    .catch((replyErr) =>
+      console.error("Failed to notify user of error:", replyErr)
+    );
 });
 
 startOAuthServer(bot, 3000);

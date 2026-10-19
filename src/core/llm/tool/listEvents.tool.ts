@@ -1,0 +1,54 @@
+import { listEvents } from "../../calendar/calendarEvents.service.js";
+import type { CalendarEvent } from "../../calendar/calendar.type.js";
+import {
+  formatTime,
+  formatDate,
+  parseLocalDate,
+} from "../../util/date.util.js";
+import type { ToolDefinition } from "../type/tool.type.js";
+import { ListEventsInputSchema } from "../validation/listEvents.validation.js";
+
+const formatEventForPrompt = (event: CalendarEvent): string => {
+  const date = formatDate(event.start);
+  if (event.allDay) return `${date} All day: ${event.summary}`;
+
+  return `${date} ${formatTime(event.start)}-${formatTime(event.end)} ${
+    event.summary
+  }`;
+};
+
+export const LIST_EVENTS_TOOL: ToolDefinition = {
+  schema: {
+    name: "list_events",
+    description:
+      "Fetch real calendar events from the inclusive start date through the inclusive end date. Call this whenever you need to see events for a specific period to answer the question.",
+    input_schema: {
+      type: "object",
+      properties: {
+        start: {
+          type: "string",
+          description: "Inclusive start date, ISO 8601 format, e.g. 2026-10-20",
+        },
+        end: {
+          type: "string",
+          description: "Inclusive end date, ISO 8601 format, e.g. 2026-10-27",
+        },
+      },
+      required: ["start", "end"],
+    },
+  },
+  run: async (calendar, input) => {
+    const parsed = ListEventsInputSchema.safeParse(input);
+    if (!parsed.success) return `Error: invalid input for tool "list_events"`;
+
+    const timeMin = parseLocalDate(parsed.data.start);
+    const timeMax = parseLocalDate(parsed.data.end);
+    timeMax.setDate(timeMax.getDate() + 1);
+
+    const events = await listEvents(calendar, timeMin, timeMax);
+
+    return events.length
+      ? events.map(formatEventForPrompt).join("\n")
+      : "(no events in this range)";
+  },
+};

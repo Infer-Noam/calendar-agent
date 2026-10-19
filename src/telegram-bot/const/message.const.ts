@@ -14,6 +14,8 @@ export const DISCONNECT_NOT_CONNECTED_MESSAGE = `No calendar connection found. S
 
 export const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
 
+export const AI_UNAVAILABLE_MESSAGE = "I can't answer questions right now — this isn't something on your end. Please try again later.";
+
 export const CONNECTION_CANCELLED_MESSAGE = `Calendar connection cancelled. Send /${BotCommand.Connect} if you change your mind.`;
 
 export const CONNECTION_CANCELLED_PAGE = `Calendar connection cancelled. ${CLOSE_TAB_SUFFIX}`;
