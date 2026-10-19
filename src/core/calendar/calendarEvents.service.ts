@@ -1,6 +1,13 @@
-import type { CalendarEvent, GoogleCalendarClient, GoogleCalendarEvent } from "./calendar.type.js";
+import type {
+  CalendarEvent,
+  GoogleCalendarClient,
+  GoogleCalendarEvent,
+} from "./calendar.type.js";
+import { startOfToday } from "../util/date.util.js";
 
-const toCalendarEvent = (event: GoogleCalendarEvent): CalendarEvent | undefined => {
+const toCalendarEvent = (
+  event: GoogleCalendarEvent
+): CalendarEvent | undefined => {
   const allDay = Boolean(event.start?.date);
   const start = event.start?.dateTime ?? event.start?.date;
   const end = event.end?.dateTime ?? event.end?.date;
@@ -30,16 +37,20 @@ export const listEvents = async (
     orderBy: "startTime",
   });
 
-  return (data.items ?? [])
-    .map(toCalendarEvent)
-    .filter((event): event is CalendarEvent => event !== undefined);
+  return (data.items ?? []).reduce<CalendarEvent[]>((events, item) => {
+    const event = toCalendarEvent(item);
+    if (event) events.push(event);
+
+    return events;
+  }, []);
 };
 
-export const getTodayEvents = (calendar: GoogleCalendarClient): Promise<CalendarEvent[]> => {
-  const now = new Date();
+export const getTodayEvents = (
+  calendar: GoogleCalendarClient
+): Promise<CalendarEvent[]> =>
+  listEvents(calendar, startOfToday(), startOfToday(1));
 
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  
-  return listEvents(calendar, startOfDay, endOfDay);
-};
+export const getUpcomingWeekEvents = (
+  calendar: GoogleCalendarClient
+): Promise<CalendarEvent[]> =>
+  listEvents(calendar, startOfToday(), startOfToday(7));

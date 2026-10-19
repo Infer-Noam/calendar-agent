@@ -9,6 +9,16 @@ import { telegramIdentityMiddleware } from "./middleware/telegramIdentity/telegr
 import { calendarAccessMiddleware } from "./middleware/calendarAccess.middleware.js";
 import type { BotContext } from "./middleware/telegramIdentity/botContext.type.js";
 import { BotCommand } from "./enum/botCommand.enum.js";
+import {
+  NOT_CONNECTED_MESSAGE,
+  ALREADY_CONNECTED_MESSAGE,
+  CALENDAR_EXPIRED_MESSAGE,
+  DISCONNECTED_MESSAGE,
+  DISCONNECT_NOT_CONNECTED_MESSAGE,
+  GENERIC_ERROR_MESSAGE,
+  connectUrlMessage,
+  connectedEmailMessage,
+} from "./const/message.const.js";
 import { formatEventsList } from "./util/calendarEvent.util.js";
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -23,29 +33,28 @@ bot.use(telegramIdentityMiddleware);
 
 bot.command(BotCommand.Connect, calendarAccessMiddleware, async (ctx) => {
   if (ctx.calendarAccess.status === CalendarAccessStatus.Connected) {
-    await ctx.reply(`Calendar already connected. Send /${BotCommand.Status} to check anytime.`);
+    await ctx.reply(ALREADY_CONNECTED_MESSAGE);
     return;
   }
   const url = getAuthUrl(ctx.telegramUserId);
-  await ctx.reply(`Connect your Google Calendar:\n${url}`);
+  await ctx.reply(connectUrlMessage(url));
 });
 
 bot.command(BotCommand.Status, calendarAccessMiddleware, async (ctx) => {
   const access = ctx.calendarAccess;
   if (access.status === CalendarAccessStatus.Connected) {
-    await ctx.reply(`Calendar connected: ${access.email}`);
+    await ctx.reply(connectedEmailMessage(access.email));
   } else if (access.status === CalendarAccessStatus.Expired) {
-    await ctx.reply(`Your calendar connection expired. Send /${BotCommand.Connect} to reconnect.`);
+    await ctx.reply(CALENDAR_EXPIRED_MESSAGE);
   } else {
-    await ctx.reply(`Calendar not connected. Send /${BotCommand.Connect}.`);
+    await ctx.reply(NOT_CONNECTED_MESSAGE);
   }
 });
 
 bot.command(BotCommand.Today, calendarAccessMiddleware, async (ctx) => {
   const access = ctx.calendarAccess;
-  
   if (access.status !== CalendarAccessStatus.Connected) {
-    await ctx.reply(`Calendar not connected. Send /${BotCommand.Connect}.`);
+    await ctx.reply(NOT_CONNECTED_MESSAGE);
     return;
   }
 
@@ -55,11 +64,7 @@ bot.command(BotCommand.Today, calendarAccessMiddleware, async (ctx) => {
 
 bot.command(BotCommand.Disconnect, async (ctx) => {
   const removed = await removeStoredTokens(ctx.telegramUserId);
-  await ctx.reply(
-    removed
-      ? "Calendar disconnected."
-      : `No calendar connection found. Send /${BotCommand.Connect} if you'd like to connect one.`
-  );
+  await ctx.reply(removed ? DISCONNECTED_MESSAGE : DISCONNECT_NOT_CONNECTED_MESSAGE);
 });
 
 bot.on("message:text", async (ctx) => {
@@ -69,7 +74,7 @@ bot.on("message:text", async (ctx) => {
 bot.catch((err) => {
   console.error(`Unhandled error for update ${err.ctx.update.update_id}:`, err.error);
   err.ctx
-    .reply("Something went wrong. Please try again.")
+    .reply(GENERIC_ERROR_MESSAGE)
     .catch((replyErr) => console.error("Failed to notify user of error:", replyErr));
 });
 
