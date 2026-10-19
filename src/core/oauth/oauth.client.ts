@@ -1,0 +1,13 @@
+import { google } from "googleapis";
+
+export const createOAuthClient = () => {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+
+  if (!clientId || !clientSecret || !redirectUri) {
+    throw new Error("Google OAuth env vars are not set");
+  }
+
+  return new google.auth.OAuth2(clientId, clientSecret, redirectUri);
+};
