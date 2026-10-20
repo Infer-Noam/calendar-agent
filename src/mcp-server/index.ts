@@ -5,6 +5,16 @@ import { resolveToolContext } from "./service/mcpRequestAuth.service.js";
 import { buildMcpServer } from "./service/mcpServer.service.js";
 import { MCP_PATH, DEFAULT_MCP_PORT } from "./const/mcpServer.const.js";
 
+const { CORE_SERVER_URL, NOTIFY_PROPOSAL_SECRET } = process.env;
+
+if (!CORE_SERVER_URL) {
+  throw new Error("CORE_SERVER_URL is not set");
+}
+
+if (!NOTIFY_PROPOSAL_SECRET) {
+  throw new Error("NOTIFY_PROPOSAL_SECRET is not set");
+}
+
 const app = express();
 
 app.use(express.json());
@@ -21,7 +31,7 @@ app.post(MCP_PATH, async (req, res) => {
     return;
   }
 
-  const server = buildMcpServer(context);
+  const server = buildMcpServer(context, CORE_SERVER_URL, NOTIFY_PROPOSAL_SECRET);
 
   try {
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });

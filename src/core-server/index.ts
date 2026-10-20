@@ -3,18 +3,29 @@ import { webhookCallback } from "grammy";
 import { bot } from "./telegramBot.js";
 import { createOAuthRouter } from "./route/oauth.route.js";
 import { createDailyScanRouter } from "./route/dailyScan.route.js";
+import { createNotifyProposalRouter } from "./route/notifyProposal.route.js";
 import { WEBHOOK_PATH, DEFAULT_PORT } from "./const/server.const.js";
 
-const { DAILY_SCAN_SECRET, PORT = DEFAULT_PORT, WEBHOOK_URL } = process.env;
+const {
+  DAILY_SCAN_SECRET,
+  NOTIFY_PROPOSAL_SECRET,
+  PORT = DEFAULT_PORT,
+  WEBHOOK_URL,
+} = process.env;
 
 if (!DAILY_SCAN_SECRET) {
   throw new Error("DAILY_SCAN_SECRET is not set");
+}
+
+if (!NOTIFY_PROPOSAL_SECRET) {
+  throw new Error("NOTIFY_PROPOSAL_SECRET is not set");
 }
 
 const app = express();
 
 app.use(createOAuthRouter(bot));
 app.use(createDailyScanRouter(bot, DAILY_SCAN_SECRET));
+app.use(createNotifyProposalRouter(bot, NOTIFY_PROPOSAL_SECRET));
 
 if (WEBHOOK_URL) {
   const webhookEndpoint = new URL(WEBHOOK_PATH, WEBHOOK_URL).toString();
