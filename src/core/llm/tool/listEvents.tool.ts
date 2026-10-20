@@ -10,8 +10,8 @@ import { ListEventsInputSchema } from "../validation/listEvents.validation.js";
 
 const formatEventForPrompt = (event: CalendarEvent): string => {
   const startDate = formatDate(event.start);
-  
-  if (event.allDay) return `${startDate} All day: ${event.summary}`;
+
+  if (event.allDay) return `[id=${event.id}] ${startDate} All day: ${event.summary}`;
 
   const endDate = formatDate(event.end);
   const timeRange =
@@ -19,14 +19,14 @@ const formatEventForPrompt = (event: CalendarEvent): string => {
       ? `${formatTime(event.start)}-${formatTime(event.end)}`
       : `${formatTime(event.start)} (${startDate}) - ${formatTime(event.end)} (${endDate})`;
 
-  return `${startDate} ${timeRange} ${event.summary}`;
+  return `[id=${event.id}] ${startDate} ${timeRange} ${event.summary}`;
 };
 
 export const LIST_EVENTS_TOOL: ToolDefinition = {
   schema: {
     name: "list_events",
     description:
-      "Fetch real calendar events from the inclusive start date through the inclusive end date. Call this whenever you need to see events for a specific period to answer the question.",
+      "Fetch real calendar events from the inclusive start date through the inclusive end date. Call this whenever you need to see events for a specific period to answer the question. Each event is returned with its real eventId, needed if you want to edit or delete it.",
     input_schema: {
       type: "object",
       properties: {

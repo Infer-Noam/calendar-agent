@@ -1,4 +1,5 @@
 import { BotCommand } from "../enum/botCommand.enum.js";
+import { EventProposalKind } from "@core/calendar/enum/eventProposalKind.enum.js";
 
 const CLOSE_TAB_SUFFIX = "You can close this tab and go back to Telegram.";
 
@@ -39,9 +40,13 @@ export const PROPOSAL_NOT_FOUND_MESSAGE = "I couldn't find that proposal — it 
 
 export const PROPOSAL_ALREADY_HANDLED_MESSAGE = "This proposal was already handled.";
 
-export const PROPOSAL_REJECTED_MESSAGE = "Cancelled — nothing was added to your calendar.";
+export const PROPOSAL_REJECTED_MESSAGE = "Cancelled — no changes were made to your calendar.";
 
-export const PROPOSAL_FAILED_MESSAGE = "Approved, but creating the event failed. Nothing was added to your calendar — please try asking again.";
+export const PROPOSAL_FAILED_MESSAGE = "Approved, but the change failed to go through. Nothing was changed on your calendar — please try asking again.";
 
-export const proposalApprovedMessage = (summary: string): string =>
-  `Added "${summary}" to your calendar.`;
+export const proposalApprovedMessage = (kind: EventProposalKind, summary: string): string => {
+  if (kind === EventProposalKind.Edit) return `Updated "${summary}" on your calendar.`;
+  if (kind === EventProposalKind.Delete) return `Deleted "${summary}" from your calendar.`;
+
+  return `Added "${summary}" to your calendar.`;
+};

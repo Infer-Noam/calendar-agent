@@ -36,8 +36,8 @@ export const PROPOSE_CREATE_EVENT_TOOL: ToolDefinition = {
       return { content: `Error: invalid input for tool "propose_create_event"` };
 
     const { summary, allDay, start, end } = parsed.data;
-    
-    const proposalId = await createProposal(telegramUserId, summary, allDay, start, end);
+
+    const proposalId = await createProposal(telegramUserId, parsed.data);
 
     return {
       content: `Proposal created (pending user approval): "${summary}"${allDay ? " (all day)" : ""} from ${start} to ${end}.`,

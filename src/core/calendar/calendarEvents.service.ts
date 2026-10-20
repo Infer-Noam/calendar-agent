@@ -51,18 +51,49 @@ export const getTodayEvents = (
 ): Promise<CalendarEvent[]> =>
   listEvents(calendar, startOfToday(), startOfToday(1));
 
+const buildEventRequestBody = (
+  summary: string,
+  allDay: boolean,
+  start: string,
+  end: string
+) => ({
+  summary,
+  start: allDay ? { date: start } : { dateTime: start },
+  end: allDay ? { date: toExclusiveEndDate(end) } : { dateTime: end },
+});
+
 export const createEvent = async (
   calendar: GoogleCalendarClient,
   summary: string,
   allDay: boolean,
   start: string,
   end: string
-) => calendar.events.insert({
+) =>
+  calendar.events.insert({
     calendarId: "primary",
-    requestBody: {
-      summary,
-      start: allDay ? { date: start } : { dateTime: start },
-      end: allDay ? { date: toExclusiveEndDate(end) } : { dateTime: end },
-    },
+    requestBody: buildEventRequestBody(summary, allDay, start, end),
+  });
+
+export const updateEvent = async (
+  calendar: GoogleCalendarClient,
+  eventId: string,
+  summary: string,
+  allDay: boolean,
+  start: string,
+  end: string
+) =>
+  calendar.events.update({
+    calendarId: "primary",
+    eventId,
+    requestBody: buildEventRequestBody(summary, allDay, start, end),
+  });
+
+export const deleteEvent = async (
+  calendar: GoogleCalendarClient,
+  eventId: string
+) =>
+  calendar.events.delete({
+    calendarId: "primary",
+    eventId,
   });
 

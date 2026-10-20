@@ -1,24 +1,25 @@
 import { firestore } from "../firestore.js";
 import { EVENT_PROPOSALS_COLLECTION } from "../calendar/calendar.const.js";
-import { EventProposalStatus } from "../calendar/eventProposal.type.js";
-import type { EventProposal } from "../calendar/eventProposal.type.js";
+import { EventProposalStatus } from "../calendar/enum/eventProposalStatus.enum.js";
+import { EventProposalKind } from "../calendar/enum/eventProposalKind.enum.js";
+import type {
+  EventProposal,
+  EventTimeFields,
+  EditEventFields,
+  DeleteEventFields,
+  NewEventProposal,
+} from "../calendar/type/eventProposal.type.js";
 
-export const createProposal = async (
+const saveNewProposal = async (
   telegramUserId: string,
-  summary: string,
-  allDay: boolean,
-  start: string,
-  end: string
+  data: NewEventProposal
 ): Promise<string> => {
   const docRef = firestore.collection(EVENT_PROPOSALS_COLLECTION).doc();
 
   const proposal: EventProposal = {
+    ...data,
     id: docRef.id,
     telegramUserId,
-    summary,
-    allDay,
-    start,
-    end,
     status: EventProposalStatus.Pending,
     createdAt: Date.now(),
   };
@@ -27,6 +28,24 @@ export const createProposal = async (
 
   return docRef.id;
 };
+
+export const createProposal = (
+  telegramUserId: string,
+  data: EventTimeFields
+): Promise<string> =>
+  saveNewProposal(telegramUserId, { ...data, kind: EventProposalKind.Create });
+
+export const createEditProposal = (
+  telegramUserId: string,
+  data: EditEventFields
+): Promise<string> =>
+  saveNewProposal(telegramUserId, { ...data, kind: EventProposalKind.Edit });
+
+export const createDeleteProposal = (
+  telegramUserId: string,
+  data: DeleteEventFields
+): Promise<string> =>
+  saveNewProposal(telegramUserId, { ...data, kind: EventProposalKind.Delete });
 
 export const getProposal = async (
   proposalId: string

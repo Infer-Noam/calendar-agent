@@ -1,5 +1,12 @@
-import { createEvent } from "@core/calendar/calendarEvents.service.js";
+import {
+  createEvent,
+  updateEvent,
+  deleteEvent,
+} from "@core/calendar/calendarEvents.service.js";
+import type { GoogleCalendarClient } from "@core/calendar/calendar.type.js";
 import { CalendarAccessStatus } from "@core/calendar/calendar.type.js";
+import { EventProposalKind } from "@core/calendar/enum/eventProposalKind.enum.js";
+import type { EventProposal } from "@core/calendar/type/eventProposal.type.js";
 import { getCalendarAccessForUser } from "@core/calendar/access.service.js";
 import {
   getProposal,
@@ -17,6 +24,26 @@ import {
   PROPOSAL_FAILED_MESSAGE,
   proposalApprovedMessage,
 } from "../const/message.const.js";
+
+const executeApprovedProposal = (
+  calendar: GoogleCalendarClient,
+  proposal: EventProposal
+): Promise<unknown> => {
+  switch (proposal.kind) {
+    case EventProposalKind.Edit: {
+      const { eventId, summary, allDay, start, end } = proposal;
+      return updateEvent(calendar, eventId, summary, allDay, start, end);
+    }
+    case EventProposalKind.Delete: {
+      const { eventId } = proposal;
+      return deleteEvent(calendar, eventId);
+    }
+    case EventProposalKind.Create: {
+      const { summary, allDay, start, end } = proposal;
+      return createEvent(calendar, summary, allDay, start, end);
+    }
+  }
+};
 
 export const handleProposalApproval = async (
   ctx: BotContext
@@ -61,35 +88,29 @@ export const handleProposalApproval = async (
   }
 
   try {
-    await createEvent(
-      access.calendar,
-      proposal.summary,
-      proposal.allDay,
-      proposal.start,
-      proposal.end
-    );
+    await executeApprovedProposal(access.calendar, proposal);
   } catch (err) {
-    console.error("Failed to create approved event:", err);
+    console.error(`Failed to execute approved proposal (${proposal.kind}):`, err);
     await markProposalFailed(parsed.proposalId);
     await ctx.editMessageText(PROPOSAL_FAILED_MESSAGE);
 
     return;
   }
 
-  await ctx
-    .editMessageText(proposalApprovedMessage(proposal.summary))
-    .catch(async (err) => {
-      console.error(
-        "Event created, but failed to edit confirmation message:",
-        err
+  const confirmation = proposalApprovedMessage(proposal.kind, proposal.summary);
+
+  await ctx.editMessageText(confirmation).catch(async (err) => {
+    console.error(
+      "Proposal executed, but failed to edit confirmation message:",
+      err
+    );
+    await ctx
+      .reply(confirmation)
+      .catch((replyErr) =>
+        console.error(
+          "Also failed to send fallback confirmation reply:",
+          replyErr
+        )
       );
-      await ctx
-        .reply(proposalApprovedMessage(proposal.summary))
-        .catch((replyErr) =>
-          console.error(
-            "Also failed to send fallback confirmation reply:",
-            replyErr
-          )
-        );
-    });
+  });
 };

@@ -1,4 +1,5 @@
-import type { EventProposal } from "@core/calendar/eventProposal.type.js";
+import { EventProposalKind } from "@core/calendar/enum/eventProposalKind.enum.js";
+import type { EventProposal } from "@core/calendar/type/eventProposal.type.js";
 import { parseLocalDate, APP_TIMEZONE } from "@core/util/dateTime.util.js";
 
 const formatDateTime = (isoString: string): string =>
@@ -19,15 +20,19 @@ const formatDateOnly = (dateString: string): string =>
     timeZone: APP_TIMEZONE,
   });
 
-export const formatProposalConfirmation = (proposal: EventProposal): string => {
-  if (proposal.allDay) {
-    const range =
-      proposal.start === proposal.end
-        ? formatDateOnly(proposal.start)
-        : `${formatDateOnly(proposal.start)} – ${formatDateOnly(proposal.end)}`;
+const formatDateRange = (allDay: boolean, start: string, end: string): string => {
+  if (!allDay) return `${formatDateTime(start)} – ${formatDateTime(end)}`;
 
-    return `Schedule "${proposal.summary}"?\nAll day, ${range}`;
+  const range = start === end ? formatDateOnly(start) : `${formatDateOnly(start)} – ${formatDateOnly(end)}`;
+  return `All day, ${range}`;
+};
+
+export const formatProposalConfirmation = (proposal: EventProposal): string => {
+  if (proposal.kind === EventProposalKind.Delete) {
+    return `Delete "${proposal.summary}"?`;
   }
 
-  return `Schedule "${proposal.summary}"?\n${formatDateTime(proposal.start)} – ${formatDateTime(proposal.end)}`;
+  const prefix = proposal.kind === EventProposalKind.Edit ? "Change event to" : "Schedule";
+
+  return `${prefix} "${proposal.summary}"?\n${formatDateRange(proposal.allDay, proposal.start, proposal.end)}`;
 };
