@@ -11,8 +11,10 @@ import {
   MAX_RESPONSE_TOKENS,
   MAX_TOOL_ITERATIONS,
   TOOL_ITERATION_LIMIT_MESSAGE,
+  BUDGET_PAUSED_MESSAGE,
   VERIFIED_ACTIONS_TAG,
 } from "../const/calendarAssistant.const.js";
+import { isBudgetExceeded, recordLlmSpend } from "../../budget/service/budget.service.js";
 import { buildSystemPrompt } from "../prompt/calendarAssistant.prompt.js";
 import { MessageRole } from "../enum/messageRole.enum.js";
 import {
@@ -133,6 +135,10 @@ export const answerCalendarQuestion = async (
       return { answer: TOOL_ITERATION_LIMIT_MESSAGE, toolCalls: [] };
     }
 
+    if (await isBudgetExceeded()) {
+      return { answer: BUDGET_PAUSED_MESSAGE, toolCalls: [] };
+    }
+
     const response = await anthropic.messages.create({
       model: MODEL,
       max_tokens: MAX_RESPONSE_TOKENS,
@@ -146,6 +152,8 @@ export const answerCalendarQuestion = async (
     console.log(
       `LLM usage (iteration ${iteration}) — input: ${response.usage.input_tokens}, output: ${response.usage.output_tokens}`
     );
+
+    await recordLlmSpend(response.usage.input_tokens, response.usage.output_tokens);
 
     if (response.stop_reason !== "tool_use") {
       const textBlock = response.content.find((block) => block.type === "text");
