@@ -1,53 +1,30 @@
 import express from "express";
 import type { Bot } from "grammy";
-import { handleOAuthCallback } from "./service/connect.service.js";
+import { MCP_OAUTH_STATE } from "@core/mcpAuth/mcpAuth.const.js";
+import { handleMcpCallback, redirectToMcpConnect } from "../mcp-server/mcpConnect.server.js";
+import { handleTelegramCallback } from "./telegramConnect.server.js";
 import type { BotContext } from "./middleware/telegramIdentity/botContext.type.js";
 import { getQueryParam } from "./util/query.util.js";
-import {
-  CONNECTION_CANCELLED_MESSAGE,
-  CONNECTION_CANCELLED_PAGE,
-  CONNECTED_PAGE,
-  MISSING_CODE_OR_STATE_PAGE,
-  CONNECT_FAILED_MESSAGE,
-  CONNECT_FAILED_PAGE,
-  oauthConnectedMessage,
-} from "./const/message.const.js";
+import { MCP_TOKEN_ISSUED_MESSAGE } from "./const/message.const.js";
 
 export const buildOAuthApp = (bot: Bot<BotContext>) => {
   const app = express();
 
+  app.get("/mcp/connect", redirectToMcpConnect);
+
   app.get("/oauth/callback", async (req, res) => {
-    const code = getQueryParam(req.query, "code");
-    const telegramUserId = getQueryParam(req.query, "state");
-    const error = getQueryParam(req.query, "error");
+    const state = getQueryParam(req.query, "state");
 
-    if (error && telegramUserId) {
-      await bot.api
-        .sendMessage(telegramUserId, CONNECTION_CANCELLED_MESSAGE)
-        .catch((sendErr) => console.error("Failed to notify user of OAuth cancellation:", sendErr));
-      res.send(CONNECTION_CANCELLED_PAGE);
+    if (state === MCP_OAUTH_STATE) {
+      await handleMcpCallback(req, res, async (telegramUserId) => {
+        await bot.api
+          .sendMessage(telegramUserId, MCP_TOKEN_ISSUED_MESSAGE)
+          .catch((sendErr) => console.error("Failed to notify user of MCP connect:", sendErr));
+      });
       return;
     }
 
-    if (!code || !telegramUserId) {
-      res.status(400).send(MISSING_CODE_OR_STATE_PAGE);
-      return;
-    }
-
-    try {
-      const email = await handleOAuthCallback(code, telegramUserId);
-
-      await bot.api.sendMessage(telegramUserId, oauthConnectedMessage(email));
-
-      res.send(CONNECTED_PAGE);
-    } catch (err) {
-      console.error("OAuth callback failed:", err);
-      await bot.api
-        .sendMessage(telegramUserId, CONNECT_FAILED_MESSAGE)
-        .catch((sendErr) => console.error("Failed to notify user of OAuth failure:", sendErr));
-
-      res.status(500).send(CONNECT_FAILED_PAGE);
-    }
+    await handleTelegramCallback(req, res, bot);
   });
 
   return app;

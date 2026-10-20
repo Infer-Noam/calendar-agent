@@ -1,4 +1,4 @@
-const GOOGLE_API_AUTH_BASE = "https://www.googleapis.com/auth";
+export const GOOGLE_API_AUTH_BASE = "https://www.googleapis.com/auth";
 
 export const CALENDAR_SCOPES = [
   `${GOOGLE_API_AUTH_BASE}/calendar.readonly`,

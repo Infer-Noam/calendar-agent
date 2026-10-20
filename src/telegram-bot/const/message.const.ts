@@ -29,6 +29,8 @@ export const CONNECT_FAILED_MESSAGE = `Connecting your calendar failed. Send /${
 
 export const CONNECT_FAILED_PAGE = `Something went wrong connecting your calendar. You can close this tab and try /${BotCommand.Connect} again in Telegram.`;
 
+export const MCP_TOKEN_ISSUED_MESSAGE = "An external agent just connected using your Google account and received access to your calendar (read and propose only — it can never approve its own changes). If this wasn't you, let us know.";
+
 export const connectUrlMessage = (url: string): string => `Connect your Google Calendar:\n${url}`;
 
 export const connectedEmailMessage = (email: string): string => `Calendar connected: ${email}`;

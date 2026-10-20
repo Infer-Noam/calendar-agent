@@ -7,6 +7,18 @@ export const getUserEmail = async (telegramUserId: string): Promise<string | und
   return doc.exists ? (doc.data() as { email: string }).email : undefined;
 };
 
+export const getTelegramUserIdByEmail = async (
+  email: string
+): Promise<string | undefined> => {
+  const snapshot = await firestore
+    .collection(CALENDAR_USERS_COLLECTION)
+    .where("email", "==", email)
+    .limit(1)
+    .get();
+
+  return snapshot.empty ? undefined : snapshot.docs[0].id;
+};
+
 export const queueSaveUserEmail = (batch: WriteBatch, telegramUserId: string, email: string) =>
   batch.set(firestore.collection(CALENDAR_USERS_COLLECTION).doc(telegramUserId), { email });
 
