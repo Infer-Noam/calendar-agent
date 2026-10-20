@@ -13,7 +13,7 @@ import {
   oauthConnectedMessage,
 } from "./const/message.const.js";
 
-export const startOAuthServer = (bot: Bot<BotContext>, port: number) => {
+export const buildOAuthApp = (bot: Bot<BotContext>) => {
   const app = express();
 
   app.get("/oauth/callback", async (req, res) => {
@@ -50,7 +50,5 @@ export const startOAuthServer = (bot: Bot<BotContext>, port: number) => {
     }
   });
 
-  app.listen(port, () => {
-    console.log(`OAuth callback server listening on port ${port}`);
-  });
+  return app;
 };

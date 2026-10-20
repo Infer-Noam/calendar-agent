@@ -1,12 +1,14 @@
 import "dotenv/config";
-import { Bot, InlineKeyboard } from "grammy";
+import express from "express";
+import { Bot, InlineKeyboard, webhookCallback } from "grammy";
 import { getAuthUrl } from "./service/connect.service.js";
 import { removeStoredTokens } from "@core/calendar/access.service.js";
 import { CalendarAccessStatus } from "@core/calendar/calendar.type.js";
 import { getTodayEvents } from "@core/calendar/calendarEvents.service.js";
 import { answerCalendarQuestion } from "@core/llm/service/calendarAssistant.service.js";
 import { getProposal } from "@core/repository/eventProposal.repository.js";
-import { startOAuthServer } from "./oauth.server.js";
+import { buildOAuthApp } from "./oauth.server.js";
+import { WEBHOOK_PATH, DEFAULT_PORT } from "./const/server.const.js";
 import { telegramIdentityMiddleware } from "./middleware/telegramIdentity/telegramIdentity.middleware.js";
 import { calendarAccessMiddleware } from "./middleware/calendarAccess.middleware.js";
 import { handleProposalApproval } from "./service/proposalApproval.service.js";
@@ -133,10 +135,31 @@ bot.catch((err) => {
     );
 });
 
-startOAuthServer(bot, 3000);
+const port = Number(process.env.PORT) || DEFAULT_PORT;
+const webhookUrl = process.env.WEBHOOK_URL;
 
-bot.start({
-  onStart: (botInfo) => {
-    console.log(`Telegram bot started (long polling) as @${botInfo.username}`);
-  },
-});
+const app = buildOAuthApp(bot);
+
+if (webhookUrl) {
+  const webhookEndpoint = new URL(WEBHOOK_PATH, webhookUrl).toString();
+
+  app.use(express.json());
+  app.use(WEBHOOK_PATH, webhookCallback(bot, "express"));
+  
+  app.listen(port, () => {
+    console.log(`Server listening on port ${port} (webhook mode)`);
+  });
+
+  await bot.api.setWebhook(webhookEndpoint);
+  console.log(`Telegram webhook set to ${webhookEndpoint}`);
+} else {
+  app.listen(port, () => {
+    console.log(`OAuth callback server listening on port ${port}`);
+  });
+
+  bot.start({
+    onStart: (botInfo) => {
+      console.log(`Telegram bot started (long polling) as @${botInfo.username}`);
+    },
+  });
+}
