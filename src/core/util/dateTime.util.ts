@@ -22,3 +22,6 @@ export const formatDate = (date: Date): string =>
 
 export const getLocalUtcOffset = (date: Date = new Date()): string =>
   formatInTimeZone(date, APP_TIMEZONE, "XXX");
+
+export const formatDateTime = (date: Date): string =>
+  formatInTimeZone(date, APP_TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX");

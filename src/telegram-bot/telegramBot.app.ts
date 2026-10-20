@@ -4,7 +4,7 @@ import { getAuthUrl } from "./service/connect.service.js";
 import { removeStoredTokens } from "@core/calendar/access.service.js";
 import { CalendarAccessStatus } from "@core/calendar/calendar.type.js";
 import { getTodayEvents } from "@core/calendar/calendarEvents.service.js";
-import { answerCalendarQuestion } from "@core/llm/calendarAssistant.service.js";
+import { answerCalendarQuestion } from "@core/llm/service/calendarAssistant.service.js";
 import { getProposal } from "@core/repository/eventProposal.repository.js";
 import { startOAuthServer } from "./oauth.server.js";
 import { telegramIdentityMiddleware } from "./middleware/telegramIdentity/telegramIdentity.middleware.js";
@@ -99,10 +99,15 @@ bot.on("message:text", calendarAccessMiddleware, async (ctx) => {
 
   await ctx.reply(result.answer);
 
+  const proposalIds = result.toolCalls.reduce<string[]>(
+    (ids, call) => (call.proposalId ? [...ids, call.proposalId] : ids),
+    []
+  );
+
   await Promise.all(
-    result.proposalIds.map(async (proposalId) => {
+    proposalIds.map(async (proposalId) => {
       const proposal = await getProposal(proposalId);
-      
+
       if (!proposal) return;
 
       const keyboard = new InlineKeyboard()

@@ -9,12 +9,17 @@ import type { ToolDefinition } from "../type/tool.type.js";
 import { ListEventsInputSchema } from "../validation/listEvents.validation.js";
 
 const formatEventForPrompt = (event: CalendarEvent): string => {
-  const date = formatDate(event.start);
-  if (event.allDay) return `${date} All day: ${event.summary}`;
+  const startDate = formatDate(event.start);
+  
+  if (event.allDay) return `${startDate} All day: ${event.summary}`;
 
-  return `${date} ${formatTime(event.start)}-${formatTime(event.end)} ${
-    event.summary
-  }`;
+  const endDate = formatDate(event.end);
+  const timeRange =
+    startDate === endDate
+      ? `${formatTime(event.start)}-${formatTime(event.end)}`
+      : `${formatTime(event.start)} (${startDate}) - ${formatTime(event.end)} (${endDate})`;
+
+  return `${startDate} ${timeRange} ${event.summary}`;
 };
 
 export const LIST_EVENTS_TOOL: ToolDefinition = {
@@ -49,7 +54,7 @@ export const LIST_EVENTS_TOOL: ToolDefinition = {
     const events = await listEvents(calendar, timeMin, timeMax);
 
     return {
-      content: events.length
+      content: Boolean(events.length)
         ? events.map(formatEventForPrompt).join("\n")
         : "(no events in this range)",
     };

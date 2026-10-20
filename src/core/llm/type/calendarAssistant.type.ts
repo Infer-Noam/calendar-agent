@@ -1,4 +1,6 @@
+import type { ToolCallRecord } from "./conversationHistory.type.js";
+
 export type CalendarAnswer = {
   answer: string;
-  proposalIds: string[];
+  toolCalls: ToolCallRecord[];
 };

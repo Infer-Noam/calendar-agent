@@ -11,7 +11,7 @@ export type ToolRunResult = {
   proposalId?: string;
 };
 
-export type ToolRunOutcome = ToolRunResult & { toolUseId: string };
+export type ToolRunOutcome = ToolRunResult & { toolUseId: string; toolName: string };
 
 export type ToolDefinition = {
   schema: Tool;
