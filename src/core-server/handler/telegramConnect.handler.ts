@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
 import type { Bot } from "grammy";
-import { handleOAuthCallback } from "./service/connect.service.js";
-import type { BotContext } from "./middleware/telegramIdentity/botContext.type.js";
-import { getQueryParam } from "./util/query.util.js";
+import { handleOAuthCallback } from "../service/connect.service.js";
+import type { BotContext } from "../middleware/telegramIdentity/botContext.type.js";
+import { getQueryParam } from "../util/query.util.js";
 import {
   CONNECTION_CANCELLED_MESSAGE,
   CONNECTION_CANCELLED_PAGE,
@@ -11,7 +11,7 @@ import {
   CONNECT_FAILED_MESSAGE,
   CONNECT_FAILED_PAGE,
   oauthConnectedMessage,
-} from "./const/message.const.js";
+} from "../const/message.const.js";
 
 export const handleTelegramCallback = async (
   req: Request,

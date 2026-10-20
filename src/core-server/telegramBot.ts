@@ -1,15 +1,11 @@
 import "dotenv/config";
-import express from "express";
-import { Bot, InlineKeyboard, webhookCallback } from "grammy";
+import { Bot, InlineKeyboard } from "grammy";
 import { getAuthUrl } from "./service/connect.service.js";
 import { removeStoredTokens } from "@shared/calendar/access.service.js";
 import { CalendarAccessStatus } from "@shared/calendar/calendar.type.js";
 import { getTodayEvents } from "@shared/calendar/calendarEvents.service.js";
 import { answerCalendarQuestion } from "@shared/llm/service/calendarAssistant.service.js";
 import { getProposal } from "@shared/repository/eventProposal.repository.js";
-import { buildOAuthApp } from "./oauth.server.js";
-import { mountDailyScanRoute } from "./dailyScan.server.js";
-import { WEBHOOK_PATH, DEFAULT_PORT } from "./const/server.const.js";
 import { telegramIdentityMiddleware } from "./middleware/telegramIdentity/telegramIdentity.middleware.js";
 import { calendarAccessMiddleware } from "./middleware/calendarAccess.middleware.js";
 import { handleProposalApproval } from "./service/proposalApproval.service.js";
@@ -31,22 +27,13 @@ import {
 import { formatEventsList } from "./util/calendarEvent.util.js";
 import { formatProposalConfirmation } from "./util/eventProposal.util.js";
 
-const {
-  TELEGRAM_BOT_TOKEN,
-  DAILY_SCAN_SECRET,
-  PORT = DEFAULT_PORT,
-  WEBHOOK_URL,
-} = process.env;
+const { TELEGRAM_BOT_TOKEN } = process.env;
 
 if (!TELEGRAM_BOT_TOKEN) {
   throw new Error("TELEGRAM_BOT_TOKEN is not set");
 }
 
-if (!DAILY_SCAN_SECRET) {
-  throw new Error("DAILY_SCAN_SECRET is not set");
-}
-
-const bot = new Bot<BotContext>(TELEGRAM_BOT_TOKEN);
+export const bot = new Bot<BotContext>(TELEGRAM_BOT_TOKEN);
 
 bot.use(telegramIdentityMiddleware);
 
@@ -152,33 +139,3 @@ bot.catch((err) => {
       console.error("Failed to notify user of error:", replyErr)
     );
 });
-
-const app = buildOAuthApp(bot);
-
-mountDailyScanRoute(app, bot, DAILY_SCAN_SECRET);
-
-if (WEBHOOK_URL) {
-  const webhookEndpoint = new URL(WEBHOOK_PATH, WEBHOOK_URL).toString();
-
-  app.use(express.json());
-  app.use(WEBHOOK_PATH, webhookCallback(bot, "express"));
-
-  app.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT} (webhook mode)`);
-  });
-
-  await bot.api.setWebhook(webhookEndpoint);
-  console.log(`Telegram webhook set to ${webhookEndpoint}`);
-} else {
-  app.listen(PORT, () => {
-    console.log(`OAuth callback server listening on port ${PORT}`);
-  });
-
-  bot.start({
-    onStart: (botInfo) => {
-      console.log(
-        `Telegram bot started (long polling) as @${botInfo.username}`
-      );
-    },
-  });
-}

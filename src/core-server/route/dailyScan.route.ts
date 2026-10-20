@@ -1,23 +1,24 @@
 import { timingSafeEqual } from "crypto";
-import type { Express } from "express";
+import express from "express";
 import type { Bot } from "grammy";
-import type { BotContext } from "./middleware/telegramIdentity/botContext.type.js";
-import { runDailyScanForAllUsers } from "./service/dailyScanBroadcast.service.js";
-import { DAILY_SCAN_PATH, DAILY_SCAN_SECRET_HEADER } from "./const/server.const.js";
+import type { BotContext } from "../middleware/telegramIdentity/botContext.type.js";
+import { runDailyScanForAllUsers } from "../service/dailyScanBroadcast.service.js";
+import {
+  DAILY_SCAN_PATH,
+  DAILY_SCAN_SECRET_HEADER,
+} from "../const/server.const.js";
 
 const safeEqual = (a: string, b: string): boolean => {
   const bufA = Buffer.from(a);
   const bufB = Buffer.from(b);
-  
+
   return bufA.length === bufB.length && timingSafeEqual(bufA, bufB);
 };
 
-export const mountDailyScanRoute = (
-  app: Express,
-  bot: Bot<BotContext>,
-  secret: string
-): void => {
-  app.post(DAILY_SCAN_PATH, async (req, res) => {
+export const createDailyScanRouter = (bot: Bot<BotContext>, secret: string) => {
+  const router = express.Router();
+
+  router.post(DAILY_SCAN_PATH, async (req, res) => {
     const provided = req.get(DAILY_SCAN_SECRET_HEADER);
 
     if (!provided || !safeEqual(provided, secret)) {
@@ -33,4 +34,6 @@ export const mountDailyScanRoute = (
       res.status(500).send("Daily scan failed");
     }
   });
+
+  return router;
 };

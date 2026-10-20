@@ -4,14 +4,14 @@ import {
   handleMcpOAuthCallback,
   McpIdentityNotFoundError,
 } from "@shared/mcpAuth/mcpAuth.service.js";
-import { getQueryParam } from "./util/query.util.js";
+import { getQueryParam } from "../util/query.util.js";
 import {
   CONNECTION_CANCELLED_PAGE,
   MISSING_CODE_OR_STATE_PAGE,
   MCP_IDENTITY_NOT_FOUND_PAGE,
   MCP_CONNECT_FAILED_PAGE,
   mcpTokenPage,
-} from "./const/message.const.js";
+} from "../const/message.const.js";
 
 export const redirectToMcpConnect = (_req: Request, res: Response): void => {
   res.redirect(getMcpConnectUrl());
