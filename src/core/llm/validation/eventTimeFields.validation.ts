@@ -10,6 +10,8 @@ export const buildEventTimeFieldsUnion = <T extends z.ZodRawShape>(extraShape: T
       allDay: z.literal(false),
       start: dateTimeWithOffset,
       end: dateTimeWithOffset,
+      description: z.string().optional(),
+      reminderMinutesBefore: z.number().int().positive().optional(),
     }),
     z.object({
       ...extraShape,
@@ -17,5 +19,7 @@ export const buildEventTimeFieldsUnion = <T extends z.ZodRawShape>(extraShape: T
       allDay: z.literal(true),
       start: dateOnlyString,
       end: dateOnlyString,
+      description: z.string().optional(),
+      reminderMinutesBefore: z.number().int().positive().optional(),
     }),
   ]);

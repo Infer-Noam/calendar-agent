@@ -21,5 +21,7 @@ export type CalendarEvent = {
   start: Date;
   end: Date;
   location?: string;
+  description?: string;
+  reminderMinutesBefore?: number;
   allDay: boolean;
 };

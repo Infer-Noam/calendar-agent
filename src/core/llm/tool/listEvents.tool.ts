@@ -8,18 +8,33 @@ import {
 import type { ToolDefinition } from "../type/tool.type.js";
 import { ListEventsInputSchema } from "../validation/listEvents.validation.js";
 
+const formatEventDetails = (event: CalendarEvent): string => {
+  const details: string[] = [];
+
+  if (event.description) details.push(`description="${event.description}"`);
+
+  if (event.reminderMinutesBefore !== undefined)
+    details.push(`reminderMinutesBefore=${event.reminderMinutesBefore}`);
+
+  return Boolean(details.length) ? ` (${details.join(", ")})` : "";
+};
+
 const formatEventForPrompt = (event: CalendarEvent): string => {
   const startDate = formatDate(event.start);
+  const details = formatEventDetails(event);
 
-  if (event.allDay) return `[id=${event.id}] ${startDate} All day: ${event.summary}`;
+  if (event.allDay)
+    return `[id=${event.id}] ${startDate} All day: ${event.summary}${details}`;
 
   const endDate = formatDate(event.end);
   const timeRange =
     startDate === endDate
       ? `${formatTime(event.start)}-${formatTime(event.end)}`
-      : `${formatTime(event.start)} (${startDate}) - ${formatTime(event.end)} (${endDate})`;
+      : `${formatTime(event.start)} (${startDate}) - ${formatTime(
+          event.end
+        )} (${endDate})`;
 
-  return `[id=${event.id}] ${startDate} ${timeRange} ${event.summary}`;
+  return `[id=${event.id}] ${startDate} ${timeRange} ${event.summary}${details}`;
 };
 
 export const LIST_EVENTS_TOOL: ToolDefinition = {

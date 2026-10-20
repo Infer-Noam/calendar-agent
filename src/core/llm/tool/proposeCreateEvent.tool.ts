@@ -25,6 +25,14 @@ export const PROPOSE_CREATE_EVENT_TOOL: ToolDefinition = {
           description:
             "If allDay is false: end date and time, ISO 8601 with UTC offset, e.g. 2026-10-21T15:30:00+03:00. If allDay is true: inclusive end date, e.g. 2026-10-21",
         },
+        description: {
+          type: "string",
+          description: "Optional notes/details for the event",
+        },
+        reminderMinutesBefore: {
+          type: "number",
+          description: "Optional: minutes before the event to send a reminder notification",
+        },
       },
       required: ["summary", "allDay", "start", "end"],
     },

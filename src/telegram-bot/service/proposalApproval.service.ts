@@ -30,18 +30,12 @@ const executeApprovedProposal = (
   proposal: EventProposal
 ): Promise<unknown> => {
   switch (proposal.kind) {
-    case EventProposalKind.Edit: {
-      const { eventId, summary, allDay, start, end } = proposal;
-      return updateEvent(calendar, eventId, summary, allDay, start, end);
-    }
-    case EventProposalKind.Delete: {
-      const { eventId } = proposal;
-      return deleteEvent(calendar, eventId);
-    }
-    case EventProposalKind.Create: {
-      const { summary, allDay, start, end } = proposal;
-      return createEvent(calendar, summary, allDay, start, end);
-    }
+    case EventProposalKind.Edit:
+      return updateEvent(calendar, proposal.eventId, proposal);
+    case EventProposalKind.Delete:
+      return deleteEvent(calendar, proposal.eventId);
+    case EventProposalKind.Create:
+      return createEvent(calendar, proposal);
   }
 };
 

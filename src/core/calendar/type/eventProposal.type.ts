@@ -13,6 +13,8 @@ export type EventTimeFields = {
   allDay: boolean;
   start: string;
   end: string;
+  description?: string;
+  reminderMinutesBefore?: number;
 };
 
 export type EditEventFields = EventTimeFields & { eventId: string };

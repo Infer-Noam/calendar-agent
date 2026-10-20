@@ -33,6 +33,14 @@ export const formatProposalConfirmation = (proposal: EventProposal): string => {
   }
 
   const prefix = proposal.kind === EventProposalKind.Edit ? "Change event to" : "Schedule";
+  const lines = [
+    `${prefix} "${proposal.summary}"?`,
+    formatDateRange(proposal.allDay, proposal.start, proposal.end),
+  ];
 
-  return `${prefix} "${proposal.summary}"?\n${formatDateRange(proposal.allDay, proposal.start, proposal.end)}`;
+  if (proposal.description) lines.push(`Notes: ${proposal.description}`);
+  if (proposal.reminderMinutesBefore !== undefined)
+    lines.push(`Reminder: ${proposal.reminderMinutesBefore} min before`);
+
+  return lines.join("\n");
 };

@@ -21,6 +21,8 @@ const toCalendarEvent = (
     start: new Date(start),
     end: new Date(end),
     location: event.location ?? undefined,
+    description: event.description ?? undefined,
+    reminderMinutesBefore: event.reminders?.overrides?.[0]?.minutes ?? undefined,
     allDay,
   };
 };
@@ -51,41 +53,55 @@ export const getTodayEvents = (
 ): Promise<CalendarEvent[]> =>
   listEvents(calendar, startOfToday(), startOfToday(1));
 
-const buildEventRequestBody = (
-  summary: string,
-  allDay: boolean,
-  start: string,
-  end: string
-) => ({
+export type EventWriteFields = {
+  summary: string;
+  allDay: boolean;
+  start: string;
+  end: string;
+  description?: string;
+  reminderMinutesBefore?: number;
+};
+
+const buildEventRequestBody = ({
+  summary,
+  allDay,
+  start,
+  end,
+  description,
+  reminderMinutesBefore,
+}: EventWriteFields) => ({
   summary,
   start: allDay ? { date: start } : { dateTime: start },
   end: allDay ? { date: toExclusiveEndDate(end) } : { dateTime: end },
+  ...(description !== undefined ? { description } : {}),
+  ...(reminderMinutesBefore !== undefined
+    ? {
+        reminders: {
+          useDefault: false,
+          overrides: [{ method: "popup", minutes: reminderMinutesBefore }],
+        },
+      }
+    : {}),
 });
 
 export const createEvent = async (
   calendar: GoogleCalendarClient,
-  summary: string,
-  allDay: boolean,
-  start: string,
-  end: string
+  fields: EventWriteFields
 ) =>
   calendar.events.insert({
     calendarId: "primary",
-    requestBody: buildEventRequestBody(summary, allDay, start, end),
+    requestBody: buildEventRequestBody(fields),
   });
 
 export const updateEvent = async (
   calendar: GoogleCalendarClient,
   eventId: string,
-  summary: string,
-  allDay: boolean,
-  start: string,
-  end: string
+  fields: EventWriteFields
 ) =>
   calendar.events.update({
     calendarId: "primary",
     eventId,
-    requestBody: buildEventRequestBody(summary, allDay, start, end),
+    requestBody: buildEventRequestBody(fields),
   });
 
 export const deleteEvent = async (
