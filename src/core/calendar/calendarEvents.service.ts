@@ -3,7 +3,8 @@ import type {
   GoogleCalendarClient,
   GoogleCalendarEvent,
 } from "./calendar.type.js";
-import { startOfToday } from "../util/date.util.js";
+import { startOfToday } from "../util/dateTime.util.js";
+import { toExclusiveEndDate } from "../util/calendar.util.js";
 
 const toCalendarEvent = (
   event: GoogleCalendarEvent
@@ -49,3 +50,19 @@ export const getTodayEvents = (
   calendar: GoogleCalendarClient
 ): Promise<CalendarEvent[]> =>
   listEvents(calendar, startOfToday(), startOfToday(1));
+
+export const createEvent = async (
+  calendar: GoogleCalendarClient,
+  summary: string,
+  allDay: boolean,
+  start: string,
+  end: string
+) => calendar.events.insert({
+    calendarId: "primary",
+    requestBody: {
+      summary,
+      start: allDay ? { date: start } : { dateTime: start },
+      end: allDay ? { date: toExclusiveEndDate(end) } : { dateTime: end },
+    },
+  });
+

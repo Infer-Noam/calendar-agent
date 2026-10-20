@@ -1,15 +1,19 @@
 import "dotenv/config";
-import { Bot } from "grammy";
+import { Bot, InlineKeyboard } from "grammy";
 import { getAuthUrl } from "./service/connect.service.js";
 import { removeStoredTokens } from "@core/calendar/access.service.js";
 import { CalendarAccessStatus } from "@core/calendar/calendar.type.js";
 import { getTodayEvents } from "@core/calendar/calendarEvents.service.js";
 import { answerCalendarQuestion } from "@core/llm/calendarAssistant.service.js";
+import { getProposal } from "@core/repository/eventProposal.repository.js";
 import { startOAuthServer } from "./oauth.server.js";
 import { telegramIdentityMiddleware } from "./middleware/telegramIdentity/telegramIdentity.middleware.js";
 import { calendarAccessMiddleware } from "./middleware/calendarAccess.middleware.js";
+import { handleProposalApproval } from "./service/proposalApproval.service.js";
 import type { BotContext } from "./middleware/telegramIdentity/botContext.type.js";
 import { BotCommand } from "./enum/botCommand.enum.js";
+import { ProposalAction } from "./enum/proposalAction.enum.js";
+import { buildProposalCallbackData } from "./util/proposalCallback.util.js";
 import {
   NOT_CONNECTED_MESSAGE,
   ALREADY_CONNECTED_MESSAGE,
@@ -22,6 +26,7 @@ import {
   connectedEmailMessage,
 } from "./const/message.const.js";
 import { formatEventsList } from "./util/calendarEvent.util.js";
+import { formatProposalConfirmation } from "./util/eventProposal.util.js";
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -78,18 +83,38 @@ bot.on("message:text", calendarAccessMiddleware, async (ctx) => {
     return;
   }
 
-  try {
-    const answer = await answerCalendarQuestion(
-      ctx.telegramUserId,
-      ctx.message.text,
-      access.calendar
-    );
-    await ctx.reply(answer);
-  } catch (err) {
+  const result = await answerCalendarQuestion(
+    ctx.telegramUserId,
+    ctx.message.text,
+    access.calendar
+  ).catch((err) => {
     console.error("LLM call failed:", err);
+    return null;
+  });
+
+  if (!result) {
     await ctx.reply(AI_UNAVAILABLE_MESSAGE);
+    return;
   }
+
+  await ctx.reply(result.answer);
+
+  await Promise.all(
+    result.proposalIds.map(async (proposalId) => {
+      const proposal = await getProposal(proposalId);
+      
+      if (!proposal) return;
+
+      const keyboard = new InlineKeyboard()
+        .text("Approve", buildProposalCallbackData(ProposalAction.Approve, proposalId))
+        .text("Reject", buildProposalCallbackData(ProposalAction.Reject, proposalId));
+
+      await ctx.reply(formatProposalConfirmation(proposal), { reply_markup: keyboard });
+    })
+  );
 });
+
+bot.callbackQuery(/^(approve|reject):/, handleProposalApproval);
 
 bot.catch((err) => {
   console.error(

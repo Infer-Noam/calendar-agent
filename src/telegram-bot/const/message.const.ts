@@ -34,3 +34,14 @@ export const connectedEmailMessage = (email: string): string => `Calendar connec
 
 export const oauthConnectedMessage = (email: string): string =>
   `${connectedEmailMessage(email)}\nNot you? Send /${BotCommand.Disconnect} then /${BotCommand.Connect} again.`;
+
+export const PROPOSAL_NOT_FOUND_MESSAGE = "I couldn't find that proposal — it may have expired.";
+
+export const PROPOSAL_ALREADY_HANDLED_MESSAGE = "This proposal was already handled.";
+
+export const PROPOSAL_REJECTED_MESSAGE = "Cancelled — nothing was added to your calendar.";
+
+export const PROPOSAL_FAILED_MESSAGE = "Approved, but creating the event failed. Nothing was added to your calendar — please try asking again.";
+
+export const proposalApprovedMessage = (summary: string): string =>
+  `Added "${summary}" to your calendar.`;

@@ -4,7 +4,7 @@ import {
   formatTime,
   formatDate,
   parseLocalDate,
-} from "../../util/date.util.js";
+} from "../../util/dateTime.util.js";
 import type { ToolDefinition } from "../type/tool.type.js";
 import { ListEventsInputSchema } from "../validation/listEvents.validation.js";
 
@@ -37,9 +37,10 @@ export const LIST_EVENTS_TOOL: ToolDefinition = {
       required: ["start", "end"],
     },
   },
-  run: async (calendar, input) => {
+  run: async ({ calendar }, input) => {
     const parsed = ListEventsInputSchema.safeParse(input);
-    if (!parsed.success) return `Error: invalid input for tool "list_events"`;
+    if (!parsed.success)
+      return { content: `Error: invalid input for tool "list_events"` };
 
     const timeMin = parseLocalDate(parsed.data.start);
     const timeMax = parseLocalDate(parsed.data.end);
@@ -47,8 +48,10 @@ export const LIST_EVENTS_TOOL: ToolDefinition = {
 
     const events = await listEvents(calendar, timeMin, timeMax);
 
-    return events.length
-      ? events.map(formatEventForPrompt).join("\n")
-      : "(no events in this range)";
+    return {
+      content: events.length
+        ? events.map(formatEventForPrompt).join("\n")
+        : "(no events in this range)",
+    };
   },
 };

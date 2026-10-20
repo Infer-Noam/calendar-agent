@@ -1,0 +1,1 @@
+export const PROPOSAL_CALLBACK_SEPARATOR = ":";

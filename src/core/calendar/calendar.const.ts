@@ -8,3 +8,4 @@ export const CALENDAR_SCOPES = [
 
 export const CALENDAR_TOKENS_COLLECTION = "calendarTokens";
 export const CALENDAR_USERS_COLLECTION = "calendarUsers";
+export const EVENT_PROPOSALS_COLLECTION = "eventProposals";

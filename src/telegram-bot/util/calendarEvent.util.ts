@@ -1,7 +1,12 @@
 import type { CalendarEvent } from "@core/calendar/calendar.type.js";
+import { APP_TIMEZONE } from "@core/util/dateTime.util.js";
 
 const formatTime = (date: Date): string =>
-  date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: APP_TIMEZONE,
+  });
 
 export const formatEventsList = (events: CalendarEvent[]): string => {
   if (!events.length) return "No events today.";
