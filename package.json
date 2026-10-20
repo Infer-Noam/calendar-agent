@@ -11,7 +11,8 @@
     "dev:bot": "tsx watch src/core-server/index.ts",
     "dev:mcp": "tsx watch src/mcp-server/index.ts",
     "start:bot": "node dist/core-server/index.js",
-    "start:mcp": "node dist/mcp-server/index.js"
+    "start:mcp": "node dist/mcp-server/index.js",
+    "evals": "tsx src/evals/run.ts"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
