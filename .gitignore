@@ -1,6 +1,5 @@
 node_modules/
 dist/
-DECISIONS.md
 .env
 .env.*
 !.env.example
