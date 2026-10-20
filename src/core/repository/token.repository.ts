@@ -3,6 +3,11 @@ import type { WriteBatch } from "@google-cloud/firestore";
 import { CALENDAR_TOKENS_COLLECTION } from "../calendar/calendar.const.js";
 import { firestore } from "../firestore.js";
 
+export const getAllConnectedTelegramUserIds = async (): Promise<string[]> => {
+  const snapshot = await firestore.collection(CALENDAR_TOKENS_COLLECTION).get();
+  return snapshot.docs.map((doc) => doc.id);
+};
+
 export const getStoredTokens = async (
   telegramUserId: string
 ): Promise<Credentials | undefined> => {

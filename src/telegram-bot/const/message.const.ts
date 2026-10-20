@@ -44,6 +44,8 @@ export const PROPOSAL_REJECTED_MESSAGE = "Cancelled — no changes were made to 
 
 export const PROPOSAL_FAILED_MESSAGE = "Approved, but the change failed to go through. Nothing was changed on your calendar — please try asking again.";
 
+export const dailyScanMessage = (scan: string): string => `Daily calendar check:\n\n${scan}`;
+
 export const proposalApprovedMessage = (kind: EventProposalKind, summary: string): string => {
   if (kind === EventProposalKind.Edit) return `Updated "${summary}" on your calendar.`;
   if (kind === EventProposalKind.Delete) return `Deleted "${summary}" from your calendar.`;

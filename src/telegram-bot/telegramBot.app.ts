@@ -8,6 +8,7 @@ import { getTodayEvents } from "@core/calendar/calendarEvents.service.js";
 import { answerCalendarQuestion } from "@core/llm/service/calendarAssistant.service.js";
 import { getProposal } from "@core/repository/eventProposal.repository.js";
 import { buildOAuthApp } from "./oauth.server.js";
+import { mountDailyScanRoute } from "./dailyScan.server.js";
 import { WEBHOOK_PATH, DEFAULT_PORT } from "./const/server.const.js";
 import { telegramIdentityMiddleware } from "./middleware/telegramIdentity/telegramIdentity.middleware.js";
 import { calendarAccessMiddleware } from "./middleware/calendarAccess.middleware.js";
@@ -30,13 +31,22 @@ import {
 import { formatEventsList } from "./util/calendarEvent.util.js";
 import { formatProposalConfirmation } from "./util/eventProposal.util.js";
 
-const token = process.env.TELEGRAM_BOT_TOKEN;
+const {
+  TELEGRAM_BOT_TOKEN,
+  DAILY_SCAN_SECRET,
+  PORT = DEFAULT_PORT,
+  WEBHOOK_URL,
+} = process.env;
 
-if (!token) {
+if (!TELEGRAM_BOT_TOKEN) {
   throw new Error("TELEGRAM_BOT_TOKEN is not set");
 }
 
-const bot = new Bot<BotContext>(token);
+if (!DAILY_SCAN_SECRET) {
+  throw new Error("DAILY_SCAN_SECRET is not set");
+}
+
+const bot = new Bot<BotContext>(TELEGRAM_BOT_TOKEN);
 
 bot.use(telegramIdentityMiddleware);
 
@@ -113,10 +123,18 @@ bot.on("message:text", calendarAccessMiddleware, async (ctx) => {
       if (!proposal) return;
 
       const keyboard = new InlineKeyboard()
-        .text("Approve", buildProposalCallbackData(ProposalAction.Approve, proposalId))
-        .text("Reject", buildProposalCallbackData(ProposalAction.Reject, proposalId));
+        .text(
+          "Approve",
+          buildProposalCallbackData(ProposalAction.Approve, proposalId)
+        )
+        .text(
+          "Reject",
+          buildProposalCallbackData(ProposalAction.Reject, proposalId)
+        );
 
-      await ctx.reply(formatProposalConfirmation(proposal), { reply_markup: keyboard });
+      await ctx.reply(formatProposalConfirmation(proposal), {
+        reply_markup: keyboard,
+      });
     })
   );
 });
@@ -135,31 +153,32 @@ bot.catch((err) => {
     );
 });
 
-const port = Number(process.env.PORT) || DEFAULT_PORT;
-const webhookUrl = process.env.WEBHOOK_URL;
-
 const app = buildOAuthApp(bot);
 
-if (webhookUrl) {
-  const webhookEndpoint = new URL(WEBHOOK_PATH, webhookUrl).toString();
+mountDailyScanRoute(app, bot, DAILY_SCAN_SECRET);
+
+if (WEBHOOK_URL) {
+  const webhookEndpoint = new URL(WEBHOOK_PATH, WEBHOOK_URL).toString();
 
   app.use(express.json());
   app.use(WEBHOOK_PATH, webhookCallback(bot, "express"));
-  
-  app.listen(port, () => {
-    console.log(`Server listening on port ${port} (webhook mode)`);
+
+  app.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT} (webhook mode)`);
   });
 
   await bot.api.setWebhook(webhookEndpoint);
   console.log(`Telegram webhook set to ${webhookEndpoint}`);
 } else {
-  app.listen(port, () => {
-    console.log(`OAuth callback server listening on port ${port}`);
+  app.listen(PORT, () => {
+    console.log(`OAuth callback server listening on port ${PORT}`);
   });
 
   bot.start({
     onStart: (botInfo) => {
-      console.log(`Telegram bot started (long polling) as @${botInfo.username}`);
+      console.log(
+        `Telegram bot started (long polling) as @${botInfo.username}`
+      );
     },
   });
 }
