@@ -1,9 +1,9 @@
 import { google } from "googleapis";
-import { CALENDAR_SCOPES } from "@core/calendar/calendar.const.js";
-import { firestore } from "@core/firestore.js";
-import { createOAuthClient } from "@core/oauth/oauth.client.js";
-import { queueSaveTokens } from "@core/repository/token.repository.js";
-import { queueSaveUserEmail } from "@core/repository/user.repository.js";
+import { CALENDAR_SCOPES } from "@shared/calendar/calendar.const.js";
+import { firestore } from "@shared/firestore.js";
+import { createOAuthClient } from "@shared/oauth/oauth.client.js";
+import { queueSaveTokens } from "@shared/repository/token.repository.js";
+import { queueSaveUserEmail } from "@shared/repository/user.repository.js";
 
 export const getAuthUrl = (telegramUserId: string): string =>
   createOAuthClient().generateAuthUrl({

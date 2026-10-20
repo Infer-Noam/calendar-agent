@@ -3,17 +3,15 @@ import {
   getMcpConnectUrl,
   handleMcpOAuthCallback,
   McpIdentityNotFoundError,
-} from "@core/mcpAuth/mcpAuth.service.js";
+} from "@shared/mcpAuth/mcpAuth.service.js";
+import { getQueryParam } from "./util/query.util.js";
 import {
-  MCP_CONNECTION_CANCELLED_PAGE,
-  MCP_MISSING_CODE_PAGE,
+  CONNECTION_CANCELLED_PAGE,
+  MISSING_CODE_OR_STATE_PAGE,
   MCP_IDENTITY_NOT_FOUND_PAGE,
   MCP_CONNECT_FAILED_PAGE,
   mcpTokenPage,
 } from "./const/message.const.js";
-
-const getQueryParam = (query: Request["query"], key: string): string | undefined =>
-  typeof query[key] === "string" ? query[key] : undefined;
 
 export const redirectToMcpConnect = (_req: Request, res: Response): void => {
   res.redirect(getMcpConnectUrl());
@@ -28,12 +26,12 @@ export const handleMcpCallback = async (
   const error = getQueryParam(req.query, "error");
 
   if (error) {
-    res.send(MCP_CONNECTION_CANCELLED_PAGE);
+    res.send(CONNECTION_CANCELLED_PAGE);
     return;
   }
 
   if (!code) {
-    res.status(400).send(MCP_MISSING_CODE_PAGE);
+    res.status(400).send(MISSING_CODE_OR_STATE_PAGE);
     return;
   }
 

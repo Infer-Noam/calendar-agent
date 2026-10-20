@@ -1,10 +1,10 @@
 import type { Bot } from "grammy";
-import { getAllConnectedTelegramUserIds } from "@core/repository/token.repository.js";
-import { getCalendarAccessForUser } from "@core/calendar/access.service.js";
-import { CalendarAccessStatus } from "@core/calendar/calendar.type.js";
-import { getTodayEvents } from "@core/calendar/calendarEvents.service.js";
-import { scanTodayEvents } from "@core/llm/service/dailyScan.service.js";
-import { appendTurn } from "@core/repository/conversationHistory.repository.js";
+import { getAllConnectedTelegramUserIds } from "@shared/repository/token.repository.js";
+import { getCalendarAccessForUser } from "@shared/calendar/access.service.js";
+import { CalendarAccessStatus } from "@shared/calendar/calendar.type.js";
+import { getTodayEvents } from "@shared/calendar/calendarEvents.service.js";
+import { scanTodayEvents } from "@shared/llm/service/dailyScan.service.js";
+import { appendTurn } from "@shared/repository/conversationHistory.repository.js";
 import type { BotContext } from "../middleware/telegramIdentity/botContext.type.js";
 import { dailyScanMessage } from "../const/message.const.js";
 import { DAILY_SCAN_HISTORY_QUESTION } from "../const/dailyScan.const.js";

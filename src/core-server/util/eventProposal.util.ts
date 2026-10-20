@@ -1,6 +1,6 @@
-import { EventProposalKind } from "@core/calendar/enum/eventProposalKind.enum.js";
-import type { EventProposal } from "@core/calendar/type/eventProposal.type.js";
-import { parseLocalDate, APP_TIMEZONE } from "@core/util/dateTime.util.js";
+import { EventProposalKind } from "@shared/calendar/enum/eventProposalKind.enum.js";
+import type { EventProposal } from "@shared/calendar/type/eventProposal.type.js";
+import { parseLocalDate, APP_TIMEZONE } from "@shared/util/dateTime.util.js";
 
 const formatDateTime = (isoString: string): string =>
   new Date(isoString).toLocaleString("en-US", {

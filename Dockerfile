@@ -19,4 +19,4 @@ RUN npm ci --omit=dev
 
 COPY --from=builder /app/dist ./dist
 
-CMD ["node", "dist/telegram-bot/telegramBot.app.js"]
+CMD ["node", "dist/core-server/telegramBot.app.js"]

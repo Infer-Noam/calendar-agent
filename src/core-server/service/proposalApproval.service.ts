@@ -2,18 +2,18 @@ import {
   createEvent,
   updateEvent,
   deleteEvent,
-} from "@core/calendar/calendarEvents.service.js";
-import type { GoogleCalendarClient } from "@core/calendar/calendar.type.js";
-import { CalendarAccessStatus } from "@core/calendar/calendar.type.js";
-import { EventProposalKind } from "@core/calendar/enum/eventProposalKind.enum.js";
-import type { EventProposal } from "@core/calendar/type/eventProposal.type.js";
-import { getCalendarAccessForUser } from "@core/calendar/access.service.js";
+} from "@shared/calendar/calendarEvents.service.js";
+import type { GoogleCalendarClient } from "@shared/calendar/calendar.type.js";
+import { CalendarAccessStatus } from "@shared/calendar/calendar.type.js";
+import { EventProposalKind } from "@shared/calendar/enum/eventProposalKind.enum.js";
+import type { EventProposal } from "@shared/calendar/type/eventProposal.type.js";
+import { getCalendarAccessForUser } from "@shared/calendar/access.service.js";
 import {
   getProposal,
   claimProposalForApproval,
   claimProposalForRejection,
   markProposalFailed,
-} from "@core/repository/eventProposal.repository.js";
+} from "@shared/repository/eventProposal.repository.js";
 import type { BotContext } from "../middleware/telegramIdentity/botContext.type.js";
 import { ProposalAction } from "../enum/proposalAction.enum.js";
 import { parseProposalCallbackData } from "../util/proposalCallback.util.js";

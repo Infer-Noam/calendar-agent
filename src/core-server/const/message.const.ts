@@ -1,5 +1,5 @@
 import { BotCommand } from "../enum/botCommand.enum.js";
-import { EventProposalKind } from "@core/calendar/enum/eventProposalKind.enum.js";
+import { EventProposalKind } from "@shared/calendar/enum/eventProposalKind.enum.js";
 
 const CLOSE_TAB_SUFFIX = "You can close this tab and go back to Telegram.";
 
@@ -30,6 +30,13 @@ export const CONNECT_FAILED_MESSAGE = `Connecting your calendar failed. Send /${
 export const CONNECT_FAILED_PAGE = `Something went wrong connecting your calendar. You can close this tab and try /${BotCommand.Connect} again in Telegram.`;
 
 export const MCP_TOKEN_ISSUED_MESSAGE = "An external agent just connected using your Google account and received access to your calendar (read and propose only — it can never approve its own changes). If this wasn't you, let us know.";
+
+export const MCP_IDENTITY_NOT_FOUND_PAGE = `That Google account hasn't connected a calendar yet. Ask that person to send /${BotCommand.Connect} in Telegram first, then try this link again.`;
+
+export const MCP_CONNECT_FAILED_PAGE = "Something went wrong issuing an MCP token. Please try this link again.";
+
+export const mcpTokenPage = (token: string): string =>
+  `MCP access token (copy this into your agent's configuration — it will not be shown again):<pre>${token}</pre>${CLOSE_TAB_SUFFIX}`;
 
 export const connectUrlMessage = (url: string): string => `Connect your Google Calendar:\n${url}`;
 

@@ -1,5 +1,5 @@
-import type { CalendarEvent } from "@core/calendar/calendar.type.js";
-import { APP_TIMEZONE } from "@core/util/dateTime.util.js";
+import type { CalendarEvent } from "@shared/calendar/calendar.type.js";
+import { APP_TIMEZONE } from "@shared/util/dateTime.util.js";
 
 const formatTime = (date: Date): string =>
   date.toLocaleTimeString("en-US", {

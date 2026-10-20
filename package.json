@@ -8,9 +8,9 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
-    "dev:bot": "tsx watch src/telegram-bot/telegramBot.app.ts",
+    "dev:bot": "tsx watch src/core-server/telegramBot.app.ts",
     "dev:mcp": "tsx watch src/mcp-server/index.ts",
-    "start:bot": "node dist/telegram-bot/telegramBot.app.js",
+    "start:bot": "node dist/core-server/telegramBot.app.js",
     "start:mcp": "node dist/mcp-server/index.js"
   },
   "devDependencies": {

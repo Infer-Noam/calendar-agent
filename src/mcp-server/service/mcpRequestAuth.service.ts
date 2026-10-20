@@ -1,7 +1,7 @@
-import { getTelegramUserIdForMcpToken } from "@core/repository/mcpToken.repository.js";
-import { getCalendarAccessForUser } from "@core/calendar/access.service.js";
-import { CalendarAccessStatus } from "@core/calendar/calendar.type.js";
-import type { ToolContext } from "@core/llm/type/tool.type.js";
+import { getTelegramUserIdForMcpToken } from "@shared/repository/mcpToken.repository.js";
+import { getCalendarAccessForUser } from "@shared/calendar/access.service.js";
+import { CalendarAccessStatus } from "@shared/calendar/calendar.type.js";
+import type { ToolContext } from "@shared/llm/type/tool.type.js";
 import { BEARER_PREFIX } from "../const/mcpServer.const.js";
 
 export const resolveToolContext = async (

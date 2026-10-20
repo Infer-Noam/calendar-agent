@@ -1,7 +1,7 @@
 import express from "express";
 import type { Bot } from "grammy";
-import { MCP_OAUTH_STATE } from "@core/mcpAuth/mcpAuth.const.js";
-import { handleMcpCallback, redirectToMcpConnect } from "../mcp-server/mcpConnect.server.js";
+import { MCP_OAUTH_STATE } from "@shared/mcpAuth/mcpAuth.const.js";
+import { handleMcpCallback, redirectToMcpConnect } from "./mcpConnect.server.js";
 import { handleTelegramCallback } from "./telegramConnect.server.js";
 import type { BotContext } from "./middleware/telegramIdentity/botContext.type.js";
 import { getQueryParam } from "./util/query.util.js";

@@ -1,7 +1,7 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { TOOLS } from "@core/llm/tools.js";
-import type { ToolContext } from "@core/llm/type/tool.type.js";
+import { TOOLS } from "@shared/llm/tools.js";
+import type { ToolContext } from "@shared/llm/type/tool.type.js";
 import { MCP_SERVER_NAME, MCP_SERVER_VERSION } from "../const/mcpServer.const.js";
 
 export const buildMcpServer = (context: ToolContext): Server => {
